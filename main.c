@@ -43,6 +43,14 @@ void *philosoph(void *id);
  */
 void *starvingPhilosoph(void *id);
 
+/**
+ * Logic for the boring philosphs.
+ * 
+ * @param id
+ * @return 
+ */
+void *boringPhilosoph(void *id);
+
 /*
  * The main function of the project.
  * 
@@ -54,8 +62,8 @@ int main(int argc, char** argv) {
 
     printf("Start Program\n");
     //    doDeadlock();
-    doStarvation();
-    //    doBoring();
+    //    doStarvation();
+    doBoring();
 
     return (EXIT_SUCCESS);
 }
@@ -155,12 +163,44 @@ void doBoring() {
     pthread_t philosoph2;
     pthread_t philosoph3;
 
-    pthread_create(&philosoph1, NULL, philosoph, (void *) 0); // wir haben hier den pointer auf eine Funktion
-    pthread_create(&philosoph2, NULL, philosoph, (void *) 1); // wir haben hier den pointer auf eine Funktion
-    pthread_create(&philosoph3, NULL, philosoph, (void *) 2); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph1, NULL, boringPhilosoph, (void *) 0); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph2, NULL, boringPhilosoph, (void *) 1); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph3, NULL, boringPhilosoph, (void *) 2); // wir haben hier den pointer auf eine Funktion
 
-    void *res; // void pointer für das result
-    pthread_join(philosoph1, &res); // wartet auf das Ende eines Threads.
+    threadsFinished[0] = 1;
+    threadsFinished[1] = 1;
+    threadsFinished[2] = 1;
+
+    // init srand.
+    srand(time(NULL));
+
+    printf("Created Threads\n");
+    sleep(2); // wait 2 seconds before stsarting
+    printf("Start Run\n");
+    doRun = 1; // give signal to threads to start eating.
+
+    time_t secondsStart;
+    time_t secondsActual;
+    time(&secondsStart);
+
+    int run = 0;
+    while (run == 0) {
+        sleep(1); // wait one second and then check
+        time(&secondsActual);
+
+        printf("Values of waitingLeft: %i, %i, %i\n", waitingLeft[0], waitingLeft[1], waitingLeft[2]);
+        printf("Values of waitingRight: %i, %i, %i\n", waitingRight[0], waitingRight[1], waitingRight[2]);
+        printf("Values of Forks: %i, %i, %i\n", forks[0], forks[1], forks[2]);
+        if ((secondsActual - secondsStart) > 10) {
+            printf("%s\n", boringMessage);
+            printf("ExecutionTime: %i\n", (int) (secondsActual - secondsStart));
+            pthread_cancel(philosoph1);
+            pthread_cancel(philosoph2);
+            pthread_cancel(philosoph3);
+            break;
+        }
+
+    }
 
     pthread_exit(NULL);
 }
@@ -277,9 +317,9 @@ void *starvingPhilosoph(void* id) {
                 trueVal = 1;
                 pthread_mutex_unlock(&mutex);
             }
+            pthread_yield(NULL);
         }
 
-//        pthread_yield(NULL);
 
         // reset trueVal
         trueVal = 0;
@@ -304,7 +344,7 @@ void *starvingPhilosoph(void* id) {
         } else {
             // take right fork and eat
             forks[rightForkIndex] = 1;
-            sleep(3); // eat 2 seconds
+            sleep(2); // eat 2 seconds
             pthread_mutex_unlock(&mutex);
             pthread_yield(NULL);
             // drop left and right fork
@@ -327,10 +367,113 @@ void *starvingPhilosoph(void* id) {
         pthread_yield(NULL);
 
         // think
-//        sleep(2);
+        //        sleep(2);
     }
 
     pthread_exit(NULL);
+}
+
+void *boringPhilosoph(void* id) {
+
+    int leftForkIndex = (int) ((int *) id); // left fork index equals thread id.
+    int threadId = leftForkIndex;
+    int rightForkIndex = (leftForkIndex + 1) % 3;
+    int trueVal = 0;
+    printf("ThreadId. %i, RightForkIndex: %i\n", threadId, rightForkIndex);
+
+    // thread config
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+    pthread_yield(NULL);
+
+    while (doRun == 0) {
+        // busy waiting.
+        printf("BusyWaiting\n");
+        sleep(1); // wait one second??
+    }
+
+    // enter infinite loop.
+    int infinite = 0;
+    while (infinite == 0) {
+        trueVal = 0;
+        // take left fork        
+        while (trueVal == 0) {
+
+            if (forks[leftForkIndex] == 1) {
+                break;
+            }
+            waitingLeft[threadId]++;
+            //            printf("Incremented Waiting Left: ThreadId: %i, %i\n", waitingLeft[threadId], threadId);
+            if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                // wait some time and try again. Only proceed if left fork has been taken successfully
+                int random = rand() % 999999;
+                printf("Random1 %i\n", random);
+                usleep(random);
+            } else {
+                forks[leftForkIndex] = 1;
+                trueVal = 1;
+                pthread_mutex_unlock(&mutex);
+            }
+        }
+        pthread_yield(NULL);
+
+
+        // reset trueVal
+        trueVal = 0;
+
+        // take right fork if possible, otherwise drop left fork, wait and try again.
+        waitingRight[threadId]++;
+        if (pthread_mutex_trylock(&mutex) == EBUSY) {
+            // drop left fork
+            while (trueVal == 0) {
+
+                //  printf("Incremented Waiting Right: ThreadId: %i, %i\n", waitingRight[threadId], threadId);
+                if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                    // wait some time and try again.                   
+                    int random = rand() % 999999;
+                    printf("Random2 %i\n", random);
+                    usleep(random);
+                } else {
+                    forks[leftForkIndex] = 0;
+                    trueVal = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_yield(NULL);
+                }
+            }
+        } else {
+            // take right fork and eat
+            forks[rightForkIndex] = 1;
+            sleep(2); // eat 2 seconds
+            pthread_mutex_unlock(&mutex);
+            pthread_yield(NULL);
+            // drop left and right fork
+            trueVal = 0;
+            while (trueVal == 0) {
+                if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                    // sleep and true again
+                    int random = rand() % 999999;
+                    printf("Random3 %i\n", random);
+                    usleep(random);
+                } else {
+                    forks[leftForkIndex] = 0;
+                    forks[rightForkIndex] = 0;
+                    waitingLeft[threadId] = 0;
+                    waitingRight[threadId] = 0;
+                    trueVal = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_yield(NULL);
+                }
+            }
+        }
+        pthread_yield(NULL);
+
+        // think
+        sleep(2);
+    }
+
+    pthread_exit(NULL);
+
 }
 
 

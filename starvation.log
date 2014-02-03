@@ -37,3 +37,32 @@ Values of waitingRight: 1, 0, 1
 Values of Forks: 1, 0, 1
 Starvation.
 
+Versuch 3:
+Es hängt ein wenig davon ab, an welchen Stellen man die CPU abgibt. Gibt man sie regemäßig an den richtigen Stellen ab, wird es schwer eine Starvation zu erzeugen.
+Hier noch ein log, mit veränderten pthread_yield Aufrufen.
+
+drummer@Brutus:~/NetBeansProjects/philosophem/dist/Debug/GNU-Linux-x86$ ./philosophem 
+Start Program
+ThreadId. 1, RightForkIndex: 2
+ThreadId. 2, RightForkIndex: 0
+BusyWaiting
+ThreadId. 0, RightForkIndex: 1
+BusyWaiting
+BusyWaiting
+Created Threads
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+BusyWaiting
+Values of waitingLeft: 0, 1, 1
+Values of waitingRight: 1, 0, 1
+Values of Forks: 1, 0, 1
+Values of waitingLeft: 259, 214169, 1
+Values of waitingRight: 1, 1, 1
+Values of Forks: 0, 1, 1
+Starvation.
+
+
+

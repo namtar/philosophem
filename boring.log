@@ -1,0 +1,150 @@
+Versuch 1:
+In nachfolgendem Beispiel kann es derzeit immer noch passieren, dass es beim Waiting sehr große Werte gibt. Das ist abhängig vom generierten Zeit Zufallswert. Fällt dieser zu klein aus, geht die Anzahl der
+Versuche nach oben.
+In der Regel bereinigt sich das aber recht schnell wieder.
+
+drummer@Brutus:~/NetBeansProjects/philosophem/dist/Debug/GNU-Linux-x86$ ./philosophem 
+Start Program
+ThreadId. 0, RightForkIndex: 1
+Created Threads
+ThreadId. 1, RightForkIndex: 2
+BusyWaiting
+BusyWaiting
+ThreadId. 2, RightForkIndex: 0
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+BusyWaiting
+Random1 879327
+Random1 883979
+Random2 883979
+Values of waitingLeft: 1, 0, 2
+Values of waitingRight: 1, 1, 0
+Values of Forks: 1, 1, 0
+Random1 205006
+Random2 205006
+Random1 205006
+Values of waitingLeft: 0, 0, 4
+Values of waitingRight: 0, 1, 0
+Values of Forks: 0, 0, 0
+Values of waitingLeft: 0, 0, 5
+Values of waitingRight: 0, 1, 1
+Values of Forks: 1, 0, 1
+Values of waitingLeft: 0, 0, 5
+Values of waitingRight: 1, 1, 1
+Values of Forks: 1, 0, 1
+Random2 402325
+Random1 402325
+Values of waitingLeft: 0, 2, 0
+Values of waitingRight: 1, 2, 0
+Values of Forks: 0, 1, 1
+Values of waitingLeft: 0, 2, 0
+Values of waitingRight: 1, 2, 0
+Values of Forks: 0, 1, 1
+Random2 790625
+Random1 175164
+Random2 175164
+Values of waitingLeft: 2, 0, 0
+Values of waitingRight: 2, 0, 1
+Values of Forks: 1, 1, 0
+Random2 175164
+Random2 208891
+Random2 208891
+Random2 208891
+Random2 208891
+Values of waitingLeft: 2, 0, 0
+Values of waitingRight: 2, 0, 1
+Values of Forks: 1, 1, 0
+Random2 208891
+Random2 525050
+Random2 525050
+Values of waitingLeft: 0, 0, 0
+Values of waitingRight: 0, 1, 1
+Values of Forks: 0, 0, 0
+Values of waitingLeft: 0, 0, 0
+Values of waitingRight: 0, 1, 1
+Values of Forks: 0, 0, 0
+Random1 897954
+Values of waitingLeft: 1, 0, 1
+Values of waitingRight: 1, 1, 1
+Values of Forks: 1, 1, 0
+Boring
+ExecutionTime: 11
+
+Versucht 2:
+Initialisiert man srand beim Start der Anwendung nur einmal und nicht jedesmal vor dem Aufruf der rand() Funktion sind die erzeugten Zufallswerte besser und nicht jedesmal gleich, wenn rand kurz
+aufeinanderfolgend aufgerufen wird.
+
+drummer@Brutus:~/NetBeansProjects/philosophem/dist/Debug/GNU-Linux-x86$ ./philosophem 
+Start Program
+ThreadId. 0, RightForkIndex: 1
+ThreadId. 1, RightForkIndex: 2
+BusyWaiting
+ThreadId. 2, RightForkIndex: 0
+BusyWaiting
+BusyWaiting
+Created Threads
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+Values of waitingLeft: 0, 1, 0
+Values of waitingRight: 0, 1, 1
+Values of Forks: 0, 1, 1
+Random2 443038
+Random1 612860
+Random2 623303
+Random1 441956
+Values of waitingLeft: 2, 1, 0
+Values of waitingRight: 0, 1, 1
+Values of Forks: 0, 1, 1
+Random1 693385
+Random2 202308
+Random2 881383
+Random1 553494
+Values of waitingLeft: 4, 0, 0
+Values of waitingRight: 0, 0, 1
+Values of Forks: 0, 0, 0
+Values of waitingLeft: 5, 0, 0
+Values of waitingRight: 1, 0, 1
+Values of Forks: 1, 1, 0
+Random2 805600
+Values of waitingLeft: 5, 0, 0
+Values of waitingRight: 1, 1, 1
+Values of Forks: 1, 1, 0
+Random1 904249
+Values of waitingLeft: 0, 0, 1
+Values of waitingRight: 0, 1, 1
+Values of Forks: 0, 0, 0
+Values of waitingLeft: 0, 0, 2
+Values of waitingRight: 0, 1, 2
+Values of Forks: 1, 0, 1
+Random2 445788
+Random2 141993
+Random1 163565
+Random2 392405
+Random1 57762
+Values of waitingLeft: 0, 2, 2
+Values of waitingRight: 1, 1, 2
+Values of Forks: 1, 0, 1
+Random1 447470
+Values of waitingLeft: 0, 4, 0
+Values of waitingRight: 1, 2, 0
+Values of Forks: 0, 1, 1
+Values of waitingLeft: 0, 4, 0
+Values of waitingRight: 1, 2, 0
+Values of Forks: 0, 1, 1
+Random2 173784
+Random2 645348
+Random1 180561
+Random2 796522
+Values of waitingLeft: 2, 0, 0
+Values of waitingRight: 2, 0, 1
+Values of Forks: 1, 1, 0
+Boring
+ExecutionTime: 11
