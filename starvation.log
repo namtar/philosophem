@@ -1,0 +1,39 @@
+Versuch 1:
+
+drummer@Brutus:~/NetBeansProjects/philosophem/dist/Debug/GNU-Linux-x86$ ./philosophem 
+Start Program
+ThreadId. 1, RightForkIndex: 2
+ThreadId. 2, RightForkIndex: 0
+Created Threads
+ThreadId. 0, RightForkIndex: 1
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+Values of waitingLeft: 1, 0, 6247071
+Values of waitingRight: 1, 1, 0
+Values of Forks: 1, 1, 0
+Starvation.
+
+Versuch 2:
+
+Start Program
+ThreadId. 0, RightForkIndex: 1
+ThreadId. 2, RightForkIndex: 0
+BusyWaiting
+Created Threads
+BusyWaiting
+ThreadId. 1, RightForkIndex: 2
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+Values of waitingLeft: 0, 9172482, 1
+Values of waitingRight: 1, 0, 1
+Values of Forks: 1, 0, 1
+Starvation.
+

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <errno.h>
 
 short forks[3]; // 0 means false, 1 means true. This array represents the forks
 int waitingLeft[3];
@@ -115,9 +116,9 @@ void doStarvation() {
     pthread_t philosoph2;
     pthread_t philosoph3;
 
-    pthread_create(&philosoph1, NULL, philosoph, (void *) 0); // wir haben hier den pointer auf eine Funktion
-    pthread_create(&philosoph2, NULL, philosoph, (void *) 1); // wir haben hier den pointer auf eine Funktion
-    pthread_create(&philosoph3, NULL, philosoph, (void *) 2); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph1, NULL, starvingPhilosoph, (void *) 0); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph2, NULL, starvingPhilosoph, (void *) 1); // wir haben hier den pointer auf eine Funktion
+    pthread_create(&philosoph3, NULL, starvingPhilosoph, (void *) 2); // wir haben hier den pointer auf eine Funktion
 
     threadsFinished[0] = 1;
     threadsFinished[1] = 1;
@@ -132,12 +133,18 @@ void doStarvation() {
     while (run == 0) {
         sleep(1); // wait one second and then check
 
-
+        printf("Values of waitingLeft: %i, %i, %i\n", waitingLeft[0], waitingLeft[1], waitingLeft[2]);
+        printf("Values of waitingRight: %i, %i, %i\n", waitingRight[0], waitingRight[1], waitingRight[2]);
+        printf("Values of Forks: %i, %i, %i\n", forks[0], forks[1], forks[2]);
+        if (waitingLeft[0] > 15 || waitingLeft[1] > 15 || waitingLeft[2] > 15 || waitingRight[0] > 15 || waitingRight[1] > 15 || waitingRight[2] > 15) {
+            printf("%s\n", starvationMessage);
+            pthread_cancel(philosoph1);
+            pthread_cancel(philosoph2);
+            pthread_cancel(philosoph3);
+            break;
+        }
 
     }
-
-    //    void *res; // void pointer für das result
-    //    pthread_join(philosoph1, &res); // wartet auf das Ende eines Threads.
 
     pthread_exit(NULL);
 }
@@ -223,7 +230,7 @@ void *philosoph(void *id) {
     pthread_mutex_unlock(&mutex); // leave critical path
 
     pthread_yield(NULL);
-   
+
 
     threadsFinished[threadId] = 0;
 
@@ -249,7 +256,80 @@ void *starvingPhilosoph(void* id) {
         printf("BusyWaiting\n");
         sleep(1); // wait one second??
     }
-    
+
+    // enter infinite loop.
+    int infinite = 0;
+    while (infinite == 0) {
+        trueVal = 0;
+        // take left fork        
+        while (trueVal == 0) {
+
+            if (forks[leftForkIndex] == 1) {
+                break;
+            }
+            waitingLeft[threadId]++;
+            //            printf("Incremented Waiting Left: ThreadId: %i, %i\n", waitingLeft[threadId], threadId);
+            if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                // wait some time and try again. Only proceed if left fork has been taken successfully
+                sleep(0.5);
+            } else {
+                forks[leftForkIndex] = 1;
+                trueVal = 1;
+                pthread_mutex_unlock(&mutex);
+            }
+        }
+
+//        pthread_yield(NULL);
+
+        // reset trueVal
+        trueVal = 0;
+
+        // take right fork if possible, otherwise drop left fork, wait and try again.
+        waitingRight[threadId]++;
+        if (pthread_mutex_trylock(&mutex) == EBUSY) {
+            // drop left fork
+            while (trueVal == 0) {
+
+                //  printf("Incremented Waiting Right: ThreadId: %i, %i\n", waitingRight[threadId], threadId);
+                if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                    // wait some time and try again.
+                    sleep(0.5);
+                } else {
+                    forks[leftForkIndex] = 0;
+                    trueVal = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_yield(NULL);
+                }
+            }
+        } else {
+            // take right fork and eat
+            forks[rightForkIndex] = 1;
+            sleep(3); // eat 2 seconds
+            pthread_mutex_unlock(&mutex);
+            pthread_yield(NULL);
+            // drop left and right fork
+            trueVal = 0;
+            while (trueVal == 0) {
+                if (pthread_mutex_trylock(&mutex) == EBUSY) {
+                    // sleep and true again
+                    sleep(1);
+                } else {
+                    forks[leftForkIndex] = 0;
+                    forks[rightForkIndex] = 0;
+                    waitingLeft[threadId] = 0;
+                    waitingRight[threadId] = 0;
+                    trueVal = 1;
+                    pthread_mutex_unlock(&mutex);
+                    pthread_yield(NULL);
+                }
+            }
+        }
+        pthread_yield(NULL);
+
+        // think
+//        sleep(2);
+    }
+
     pthread_exit(NULL);
 }
 
