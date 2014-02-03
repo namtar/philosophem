@@ -1,0 +1,24 @@
+Versuch 1:
+Sobald alle linken Gabeln genommen wurden, wird ein Deadlock ausgelöst, da kein Thread die Möglichkeit mehr hat eine rechte Gabel aufzunehmen.
+
+drummer@Brutus:~/NetBeansProjects/philosophem$ ./deadlock 
+Start Program
+ThreadId. 0, RightForkIndex: 1
+Created Threads
+BusyWaiting
+ThreadId. 1, RightForkIndex: 2
+BusyWaiting
+ThreadId. 2, RightForkIndex: 0
+BusyWaiting
+BusyWaiting
+BusyWaiting
+BusyWaiting
+Start Run
+Take left fork. Id: 0
+Take left fork. Id: 2
+Take left fork. Id: 1
+Values of waitingLeft: 0, 0, 0
+Values of waitingRight: 1, 1, 1
+Values of Forks: 1, 1, 1
+The death of a clown.
+
