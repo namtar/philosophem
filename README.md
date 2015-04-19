@@ -1,4 +1,4 @@
-philosphem
+philosophem
 ==========
 
-A implementation of the philosoph problem to show deadlocks and starving
+An implementation of the philosopher problem to show deadlocks and starving
