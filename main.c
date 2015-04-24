@@ -60,12 +60,12 @@ void *boringPhilosoph(void *id);
  */
 int main(int argc, char** argv) {
 
-    printf("Start Program\n");
+    puts("Start Program");
     //    doDeadlock();
     //    doStarvation();
     doBoring();
 
-    return (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
 
 void doDeadlock() {
@@ -82,13 +82,13 @@ void doDeadlock() {
     threadsFinished[1] = 1;
     threadsFinished[2] = 1;
 
-    printf("Created Threads\n");
+    puts("Created Threads");
     sleep(2); // wait 2 seconds before stsarting
-    printf("Start Run\n");
+    puts("Start Run");
     doRun = 1; // give signal to threads to start eating.
 
     int run = 0;
-    while (run == 0) {
+    while (!run) {
         sleep(1); // sleep one second and then check for deadlock.
 
         printf("Values of waitingLeft: %i, %i, %i\n", waitingLeft[0], waitingLeft[1], waitingLeft[2]);
@@ -96,13 +96,13 @@ void doDeadlock() {
         printf("Values of Forks: %i, %i, %i\n", forks[0], forks[1], forks[2]);
 
         if (waitingLeft[0] == 0 && waitingLeft[1] == 0 && waitingLeft[2] == 0 && waitingRight[0] == 1 && waitingRight[1] == 1 && waitingRight[2] == 1) {
-            printf("%s\n", deadlockMessage);
+            puts(deadlockMessage);
             pthread_cancel(philosoph1);
             pthread_cancel(philosoph2);
             pthread_cancel(philosoph3);
             break;
         } else if (waitingLeft[0] == 1 && waitingLeft[1] == 1 && waitingLeft[2] == 1 && waitingRight[0] == 0 && waitingRight[1] == 0 && waitingRight[2] == 0) {
-            printf("%s\n", deadlockMessage);
+            puts(deadlockMessage);
             pthread_cancel(philosoph1);
             pthread_cancel(philosoph2);
             pthread_cancel(philosoph3);
@@ -132,13 +132,13 @@ void doStarvation() {
     threadsFinished[1] = 1;
     threadsFinished[2] = 1;
 
-    printf("Created Threads\n");
+    puts("Created Threads");
     sleep(2); // wait 2 seconds before stsarting
-    printf("Start Run\n");
+    puts("Start Run");
     doRun = 1; // give signal to threads to start eating.
 
     int run = 0;
-    while (run == 0) {
+    while (!run) {
         sleep(1); // wait one second and then check
 
         printf("Values of waitingLeft: %i, %i, %i\n", waitingLeft[0], waitingLeft[1], waitingLeft[2]);
@@ -174,9 +174,9 @@ void doBoring() {
     // init srand.
     srand(time(NULL));
 
-    printf("Created Threads\n");
+    puts("Created Threads");
     sleep(2); // wait 2 seconds before stsarting
-    printf("Start Run\n");
+    puts("Start Run");
     doRun = 1; // give signal to threads to start eating.
 
     time_t secondsStart;
@@ -184,7 +184,7 @@ void doBoring() {
     time(&secondsStart);
 
     int run = 0;
-    while (run == 0) {
+    while (!run) {
         sleep(1); // wait one second and then check
         time(&secondsActual);
 
@@ -219,9 +219,9 @@ void *philosoph(void *id) {
 
     pthread_yield(NULL);
 
-    while (doRun == 0) {
+    while (!doRun) {
         // busy waiting.
-        printf("BusyWaiting\n");
+        puts("BusyWaiting");
         sleep(1); // wait one second??
     }
     // now logic after run command has been given
@@ -229,7 +229,7 @@ void *philosoph(void *id) {
     waitingRight[threadId] = 1;
 
     // take left fork
-    while (trueVal == 0) {
+    while (!trueVal) {
 
         pthread_mutex_lock(&mutex); // critical path
         if (forks[leftForkIndex] == 0) {
@@ -247,10 +247,10 @@ void *philosoph(void *id) {
     //    sleep(0.05);
 
     // take right fork if possible    
-    while (trueVal == 0) {
+    while (!trueVal) {
         pthread_mutex_lock(&mutex);
         // it is not possible to take the fork. Wait a specified time and try again.
-        if (forks[rightForkIndex] == 0) {
+        if (!forks[rightForkIndex]) {
             // take fork
             printf("Take right fork. Id: %i\n", threadId);
             forks[rightForkIndex] = 1;
@@ -291,18 +291,18 @@ void *starvingPhilosoph(void* id) {
 
     pthread_yield(NULL);
 
-    while (doRun == 0) {
+    while (!doRun) {
         // busy waiting.
-        printf("BusyWaiting\n");
+        puts("BusyWaiting");
         sleep(1); // wait one second??
     }
 
     // enter infinite loop.
     int infinite = 0;
-    while (infinite == 0) {
+    while (!infinite) {
         trueVal = 0;
         // take left fork        
-        while (trueVal == 0) {
+        while (!trueVal) {
 
             if (forks[leftForkIndex] == 1) {
                 break;
@@ -328,7 +328,7 @@ void *starvingPhilosoph(void* id) {
         waitingRight[threadId]++;
         if (pthread_mutex_trylock(&mutex) == EBUSY) {
             // drop left fork
-            while (trueVal == 0) {
+            while (!trueVal) {
 
                 //  printf("Incremented Waiting Right: ThreadId: %i, %i\n", waitingRight[threadId], threadId);
                 if (pthread_mutex_trylock(&mutex) == EBUSY) {
@@ -349,7 +349,7 @@ void *starvingPhilosoph(void* id) {
             pthread_yield(NULL);
             // drop left and right fork
             trueVal = 0;
-            while (trueVal == 0) {
+            while (!trueVal) {
                 if (pthread_mutex_trylock(&mutex) == EBUSY) {
                     // sleep and true again
                     sleep(1);
@@ -387,18 +387,18 @@ void *boringPhilosoph(void* id) {
 
     pthread_yield(NULL);
 
-    while (doRun == 0) {
+    while (!doRun) {
         // busy waiting.
-        printf("BusyWaiting\n");
+        puts("BusyWaiting");
         sleep(1); // wait one second??
     }
 
     // enter infinite loop.
     int infinite = 0;
-    while (infinite == 0) {
+    while (!infinite) {
         trueVal = 0;
         // take left fork        
-        while (trueVal == 0) {
+        while (!trueVal) {
 
             if (forks[leftForkIndex] == 1) {
                 break;
@@ -426,7 +426,7 @@ void *boringPhilosoph(void* id) {
         waitingRight[threadId]++;
         if (pthread_mutex_trylock(&mutex) == EBUSY) {
             // drop left fork
-            while (trueVal == 0) {
+            while (!trueVal) {
 
                 //  printf("Incremented Waiting Right: ThreadId: %i, %i\n", waitingRight[threadId], threadId);
                 if (pthread_mutex_trylock(&mutex) == EBUSY) {
@@ -449,7 +449,7 @@ void *boringPhilosoph(void* id) {
             pthread_yield(NULL);
             // drop left and right fork
             trueVal = 0;
-            while (trueVal == 0) {
+            while (!trueVal) {
                 if (pthread_mutex_trylock(&mutex) == EBUSY) {
                     // sleep and true again
                     int random = rand() % 999999;
